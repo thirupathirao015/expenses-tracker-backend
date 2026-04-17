@@ -120,7 +120,8 @@ public class AuthController {
     @PutMapping("/update-salary")
     public ResponseEntity<?> updateSalary(
             Authentication authentication,
-            @RequestParam BigDecimal newSalary) {
+            @RequestParam BigDecimal newSalary,
+            @RequestParam(required = false) String reason) {
         
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         
@@ -130,6 +131,11 @@ public class AuthController {
         user.setSalary(newSalary);
         userRepository.save(user);
         
-        return ResponseEntity.ok("Salary updated successfully to " + newSalary);
+        String message = "Salary updated successfully to " + newSalary;
+        if (reason != null && !reason.isEmpty()) {
+            message += " (Reason: " + reason + ")";
+        }
+        
+        return ResponseEntity.ok(message);
     }
 }
