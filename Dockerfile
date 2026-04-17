@@ -1,21 +1,23 @@
-# Use Eclipse Temurin JDK 17
+# Use Eclipse Temurin JDK 17 with Maven
 FROM eclipse-temurin:17-jdk-alpine
+
+# Install Maven
+RUN apk add --no-cache maven
 
 # Set working directory
 WORKDIR /app
 
-# Copy Maven wrapper and pom.xml
-COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
+# Copy pom.xml first for better caching
+COPY pom.xml ./
 
 # Download dependencies (this layer will be cached)
-RUN ./mvnw dependency:go-offline -B
+RUN mvn dependency:go-offline -B
 
 # Copy source code
 COPY src ./src
 
 # Build the application
-RUN ./mvnw clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 # Expose the port (Railway will override with PORT env var)
 EXPOSE 8080
