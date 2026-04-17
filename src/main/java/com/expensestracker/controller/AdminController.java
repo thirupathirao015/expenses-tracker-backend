@@ -4,8 +4,8 @@ import com.expensestracker.dto.UserDTO;
 import com.expensestracker.model.User;
 import com.expensestracker.repository.ExpenseRepository;
 import com.expensestracker.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -26,13 +26,33 @@ public class AdminController {
     @Autowired
     private ExpenseRepository expenseRepository;
 
-    @Value("${admin.secret.key:admin-secret-key-2024}")
     private String adminSecretKey;
+
+    @PostConstruct
+    public void init() {
+        // Try environment variable first, then system property, then default
+        String envKey = System.getenv("ADMIN_SECRET_KEY");
+        String propKey = System.getProperty("ADMIN_SECRET_KEY");
+        
+        if (envKey != null && !envKey.isEmpty()) {
+            this.adminSecretKey = envKey;
+        } else if (propKey != null && !propKey.isEmpty()) {
+            this.adminSecretKey = propKey;
+        } else {
+            this.adminSecretKey = "admin-secret-key-2024";
+        }
+        
+        System.out.println("Admin secret key loaded (length: " + this.adminSecretKey.length() + ")");
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> adminLogin(@RequestParam String adminKey) {
+        System.out.println("Login attempt - provided key length: " + (adminKey != null ? adminKey.length() : "null"));
+        System.out.println("Login attempt - stored key length: " + (adminSecretKey != null ? adminSecretKey.length() : "null"));
+        System.out.println("Keys match: " + adminSecretKey.equals(adminKey));
+        
         if (!adminSecretKey.equals(adminKey)) {
-            return ResponseEntity.status(401).body("Invalid admin key");
+            return ResponseEntity.status(403).body("Invalid admin key");
         }
         return ResponseEntity.ok("Admin login successful");
     }
