@@ -136,6 +136,42 @@ public class ExpenseService {
                 userDetails.getId(), startDate, endDate);
     }
 
+    @Transactional
+    public ExpenseResponse updateExpense(Authentication authentication, String id, ExpenseRequest request) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        
+        Expense expense = expenseRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new RuntimeException("Expense not found"));
+        
+        // Verify the expense belongs to the current user
+        if (!expense.getUser().getId().equals(userDetails.getId())) {
+            throw new RuntimeException("Unauthorized to update this expense");
+        }
+        
+        expense.setAmount(request.getAmount());
+        expense.setCategory(request.getCategory());
+        expense.setDescription(request.getDescription());
+        expense.setExpenseDate(request.getExpenseDate());
+        
+        Expense updatedExpense = expenseRepository.save(expense);
+        return mapToExpenseResponse(updatedExpense);
+    }
+
+    @Transactional
+    public void deleteExpense(Authentication authentication, String id) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        
+        Expense expense = expenseRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new RuntimeException("Expense not found"));
+        
+        // Verify the expense belongs to the current user
+        if (!expense.getUser().getId().equals(userDetails.getId())) {
+            throw new RuntimeException("Unauthorized to delete this expense");
+        }
+        
+        expenseRepository.delete(expense);
+    }
+
     private ExpenseResponse mapToExpenseResponse(Expense expense) {
         return new ExpenseResponse(
                 expense.getId(),

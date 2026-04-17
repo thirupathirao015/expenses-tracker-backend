@@ -77,4 +77,21 @@ public class ExpenseController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdfBytes);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ExpenseResponse> updateExpense(
+            Authentication authentication,
+            @PathVariable String id,
+            @Valid @RequestBody ExpenseRequest request) {
+        ExpenseResponse response = expenseService.updateExpense(authentication, id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteExpense(
+            Authentication authentication,
+            @PathVariable String id) {
+        expenseService.deleteExpense(authentication, id);
+        return ResponseEntity.ok().build();
+    }
 }
