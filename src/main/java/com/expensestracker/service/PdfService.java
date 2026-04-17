@@ -81,33 +81,6 @@ public class PdfService {
 
             document.add(summaryTable);
 
-            // Category Breakdown
-            if (!report.getCategoryBreakdown().isEmpty()) {
-                Paragraph categoryTitle = new Paragraph("Category Breakdown", sectionFont);
-                categoryTitle.setSpacingAfter(10);
-                document.add(categoryTitle);
-
-                PdfPTable categoryTable = new PdfPTable(2);
-                categoryTable.setWidthPercentage(60);
-                categoryTable.setHorizontalAlignment(Element.ALIGN_LEFT);
-                categoryTable.setSpacingAfter(20);
-
-                // Header
-                PdfPCell headerCell1 = new PdfPCell(new Phrase("Category", headerFont));
-                PdfPCell headerCell2 = new PdfPCell(new Phrase("Amount", headerFont));
-                headerCell1.setBackgroundColor(Color.LIGHT_GRAY);
-                headerCell2.setBackgroundColor(Color.LIGHT_GRAY);
-                categoryTable.addCell(headerCell1);
-                categoryTable.addCell(headerCell2);
-
-                for (Map.Entry<String, BigDecimal> entry : report.getCategoryBreakdown().entrySet()) {
-                    categoryTable.addCell(entry.getKey().replace("_", " "));
-                    categoryTable.addCell(CURRENCY_FORMAT.format(entry.getValue()));
-                }
-
-                document.add(categoryTable);
-            }
-
             // Expense Details
             if (!report.getExpenses().isEmpty()) {
                 Paragraph expensesTitle = new Paragraph("Expense Details", sectionFont);
