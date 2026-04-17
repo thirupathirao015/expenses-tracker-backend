@@ -124,6 +124,29 @@ public class AdminController {
         return ResponseEntity.ok("Deleted all expenses for user " + user.getEmail() + " for " + year + "-" + month);
     }
 
+    @DeleteMapping("/users/{userId}/all-expenses")
+    @Transactional
+    public ResponseEntity<?> deleteUserAllExpenses(
+            @RequestParam String adminKey,
+            @PathVariable String userId) {
+        
+        if (!adminSecretKey.equals(adminKey)) {
+            return ResponseEntity.status(403).body("Error: Invalid admin key");
+        }
+        
+        User user = userRepository.findById(UUID.fromString(userId))
+                .orElse(null);
+        
+        if (user == null) {
+            return ResponseEntity.badRequest().body("Error: User not found");
+        }
+        
+        long count = expenseRepository.countByUserId(UUID.fromString(userId));
+        expenseRepository.deleteByUserId(UUID.fromString(userId));
+        
+        return ResponseEntity.ok("Deleted all " + count + " expenses for user " + user.getEmail());
+    }
+
     @DeleteMapping("/users/{userId}")
     @Transactional
     public ResponseEntity<?> deleteUser(
