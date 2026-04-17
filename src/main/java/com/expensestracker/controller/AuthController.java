@@ -18,6 +18,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -113,5 +115,21 @@ public class AuthController {
         userRepository.save(user);
         
         return ResponseEntity.ok("Password reset successfully for user: " + userEmail);
+    }
+
+    @PutMapping("/update-salary")
+    public ResponseEntity<?> updateSalary(
+            Authentication authentication,
+            @RequestParam BigDecimal newSalary) {
+        
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        
+        User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        user.setSalary(newSalary);
+        userRepository.save(user);
+        
+        return ResponseEntity.ok("Salary updated successfully to " + newSalary);
     }
 }
