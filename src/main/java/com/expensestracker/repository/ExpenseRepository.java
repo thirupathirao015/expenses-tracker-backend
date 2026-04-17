@@ -36,4 +36,8 @@ public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
             @Param("endDate") LocalDate endDate);
     
     List<Expense> findByUserIdAndExpenseDate(UUID userId, LocalDate date);
+    
+    void deleteByUserIdAndExpenseDateBetween(UUID userId, LocalDate startDate, LocalDate endDate);
+    
+    void deleteByUserId(UUID userId);
 }

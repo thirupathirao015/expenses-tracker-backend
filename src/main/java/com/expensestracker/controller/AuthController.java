@@ -4,6 +4,7 @@ import com.expensestracker.dto.AuthResponse;
 import com.expensestracker.dto.LoginRequest;
 import com.expensestracker.dto.RegisterRequest;
 import com.expensestracker.model.User;
+import com.expensestracker.repository.ExpenseRepository;
 import com.expensestracker.repository.UserRepository;
 import com.expensestracker.security.JwtUtil;
 import com.expensestracker.security.UserDetailsImpl;
@@ -16,9 +17,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -29,6 +33,9 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ExpenseRepository expenseRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -137,5 +144,66 @@ public class AuthController {
         }
         
         return ResponseEntity.ok(message);
+    }
+
+    // ==================== ADMIN ENDPOINTS ====================
+
+    @DeleteMapping("/admin/delete-user-month-expenses")
+    @Transactional
+    public ResponseEntity<?> deleteUserMonthExpenses(
+            @RequestParam String adminKey,
+            @RequestParam String userEmail,
+            @RequestParam int year,
+            @RequestParam int month) {
+        
+        // Verify admin key
+        if (!adminSecretKey.equals(adminKey)) {
+            return ResponseEntity.status(403).body("Error: Invalid admin key");
+        }
+        
+        // Find user by email
+        User user = userRepository.findByEmail(userEmail)
+                .orElse(null);
+        
+        if (user == null) {
+            return ResponseEntity.badRequest().body("Error: User not found with email: " + userEmail);
+        }
+        
+        // Calculate month date range
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        
+        // Delete expenses for that month
+        expenseRepository.deleteByUserIdAndExpenseDateBetween(user.getId(), startDate, endDate);
+        
+        return ResponseEntity.ok("Deleted all expenses for " + userEmail + " for " + year + "-" + month);
+    }
+
+    @DeleteMapping("/admin/delete-user")
+    @Transactional
+    public ResponseEntity<?> deleteUser(
+            @RequestParam String adminKey,
+            @RequestParam String userEmail) {
+        
+        // Verify admin key
+        if (!adminSecretKey.equals(adminKey)) {
+            return ResponseEntity.status(403).body("Error: Invalid admin key");
+        }
+        
+        // Find user by email
+        User user = userRepository.findByEmail(userEmail)
+                .orElse(null);
+        
+        if (user == null) {
+            return ResponseEntity.badRequest().body("Error: User not found with email: " + userEmail);
+        }
+        
+        // Delete all user expenses first (cascade)
+        expenseRepository.deleteByUserId(user.getId());
+        
+        // Delete user
+        userRepository.delete(user);
+        
+        return ResponseEntity.ok("User " + userEmail + " and all their data have been deleted successfully");
     }
 }
