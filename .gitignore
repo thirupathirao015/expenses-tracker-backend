@@ -1,0 +1,31 @@
+# Compiled class files
+target/
+*.class
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Application configuration with sensitive data
+src/main/resources/application.yml
+src/main/resources/application-*.yml
+!src/main/resources/application-example.yml
+
+# Environment variables
+.env
+.env.*

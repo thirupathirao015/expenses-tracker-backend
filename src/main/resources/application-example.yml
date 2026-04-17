@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: expenses-tracker-backend
+  
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://your-supabase-host:5432/postgres?sslmode=require}
+    username: ${SPRING_DATASOURCE_USERNAME:your-username}
+    password: ${SPRING_DATASOURCE_PASSWORD:your-password}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: ${PORT:8082}
+
+jwt:
+  secret: ${JWT_SECRET:your-secure-jwt-secret-min-32-characters-long}
+  expiration: 86400000
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
