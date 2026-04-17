@@ -9,6 +9,7 @@ import com.expensestracker.security.JwtUtil;
 import com.expensestracker.security.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,6 +33,9 @@ public class AuthController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Value("${admin.secret-key:admin-secret-key-2024}")
+    private String adminSecretKey;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
@@ -83,5 +87,31 @@ public class AuthController {
                 userDetails.getEmail(),
                 user.getSalary()
         ));
+    }
+
+    @PostMapping("/admin/reset-password")
+    public ResponseEntity<?> resetPassword(
+            @RequestParam String adminKey,
+            @RequestParam String userEmail,
+            @RequestParam String newPassword) {
+        
+        // Verify admin key
+        if (!adminSecretKey.equals(adminKey)) {
+            return ResponseEntity.status(403).body("Error: Invalid admin key");
+        }
+        
+        // Find user by email
+        User user = userRepository.findByEmail(userEmail)
+                .orElse(null);
+        
+        if (user == null) {
+            return ResponseEntity.badRequest().body("Error: User not found with email: " + userEmail);
+        }
+        
+        // Update password with bcrypt encryption
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        
+        return ResponseEntity.ok("Password reset successfully for user: " + userEmail);
     }
 }
