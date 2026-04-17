@@ -115,12 +115,12 @@ public class PdfService {
                 expensesTitle.setSpacingAfter(10);
                 document.add(expensesTitle);
 
-                PdfPTable expensesTable = new PdfPTable(4);
+                PdfPTable expensesTable = new PdfPTable(3);
                 expensesTable.setWidthPercentage(100);
                 expensesTable.setSpacingAfter(20);
 
                 // Header
-                String[] headers = {"Date", "Category", "Description", "Amount"};
+                String[] headers = {"Date", "Description", "Amount"};
                 for (String header : headers) {
                     PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
                     cell.setBackgroundColor(Color.LIGHT_GRAY);
@@ -129,7 +129,6 @@ public class PdfService {
 
                 for (var expense : report.getExpenses()) {
                     expensesTable.addCell(expense.getExpenseDate().format(DATE_FORMATTER));
-                    expensesTable.addCell(expense.getCategory().toString().replace("_", " "));
                     expensesTable.addCell(expense.getDescription() != null ? expense.getDescription() : "-");
                     expensesTable.addCell(CURRENCY_FORMAT.format(expense.getAmount()));
                 }
