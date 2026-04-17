@@ -40,4 +40,6 @@ public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
     void deleteByUserIdAndExpenseDateBetween(UUID userId, LocalDate startDate, LocalDate endDate);
     
     void deleteByUserId(UUID userId);
+    
+    long countByUserId(UUID userId);
 }
