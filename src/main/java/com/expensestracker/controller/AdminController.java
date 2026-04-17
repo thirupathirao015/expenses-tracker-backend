@@ -26,7 +26,7 @@ public class AdminController {
     @Autowired
     private ExpenseRepository expenseRepository;
 
-    @Value("${admin.secret-key:admin-secret-key-2024}")
+    @Value("${ADMIN_SECRET_KEY:admin-secret-key-2024}")
     private String adminSecretKey;
 
     @PostMapping("/login")
