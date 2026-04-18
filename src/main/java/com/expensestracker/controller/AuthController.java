@@ -2,6 +2,7 @@ package com.expensestracker.controller;
 
 import com.expensestracker.dto.AuthResponse;
 import com.expensestracker.dto.LoginRequest;
+import com.expensestracker.dto.MustChangePasswordResponse;
 import com.expensestracker.dto.RegisterRequest;
 import com.expensestracker.model.User;
 import com.expensestracker.repository.ExpenseRepository;
