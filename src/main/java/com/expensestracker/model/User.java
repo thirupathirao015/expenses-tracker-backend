@@ -37,6 +37,9 @@ public class User {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
+    @Column(name = "must_change_password")
+    private Boolean mustChangePassword = false;
+    
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Expense> expenses = new ArrayList<>();
     

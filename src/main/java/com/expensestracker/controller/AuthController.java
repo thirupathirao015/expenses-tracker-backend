@@ -85,9 +85,22 @@ public class AuthController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        String jwt = jwtUtil.generateToken(userDetails);
-
+        
         User user = userRepository.findByEmail(userDetails.getEmail()).orElseThrow();
+        
+        // Check if user must change password
+        if (user.getMustChangePassword() != null && user.getMustChangePassword()) {
+            // Generate temporary token for password change only
+            String tempJwt = jwtUtil.generateToken(userDetails);
+            return ResponseEntity.status(403).body(new MustChangePasswordResponse(
+                    "MUST_CHANGE_PASSWORD",
+                    "You must change your password before continuing",
+                    tempJwt,
+                    userDetails.getEmail()
+            ));
+        }
+        
+        String jwt = jwtUtil.generateToken(userDetails);
 
         return ResponseEntity.ok(new AuthResponse(
                 jwt,
@@ -119,9 +132,37 @@ public class AuthController {
         
         // Update password with bcrypt encryption
         user.setPassword(passwordEncoder.encode(newPassword));
+        user.setMustChangePassword(true);
         userRepository.save(user);
         
-        return ResponseEntity.ok("Password reset successfully for user: " + userEmail);
+        return ResponseEntity.ok("Password reset successfully for user: " + userEmail + ". User must change password on next login.");
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(
+            Authentication authentication,
+            @RequestParam String newPassword) {
+        
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        
+        User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Update password with bcrypt encryption
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setMustChangePassword(false);
+        userRepository.save(user);
+        
+        // Generate new JWT token for normal access
+        String jwt = jwtUtil.generateToken(userDetails);
+        
+        return ResponseEntity.ok(new AuthResponse(
+                jwt,
+                userDetails.getId(),
+                userDetails.getName(),
+                userDetails.getEmail(),
+                user.getSalary()
+        ));
     }
 
     @PutMapping("/update-salary")
