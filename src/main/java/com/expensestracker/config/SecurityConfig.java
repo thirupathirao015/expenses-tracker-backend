@@ -58,12 +58,14 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Allow all origins for deployed app (mobile networks, different WiFi, etc.)
-        // Use allowedOriginPatterns with wildcard to support any origin
+        // Allow all origins - works with any network (WiFi, mobile data, etc.)
+        // Using allowedOriginPatterns with * allows dynamic origins
         configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "*"));
-        configuration.setAllowCredentials(false); // Must be false when using wildcard origins
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With", "*"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        // Allow credentials with wildcard patterns (works in modern browsers)
+        configuration.setAllowCredentials(true);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
