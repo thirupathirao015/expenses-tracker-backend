@@ -88,8 +88,9 @@ public class AuthController {
         
         User user = userRepository.findByEmail(userDetails.getEmail()).orElseThrow();
         
-        // Check if user must change password
-        if (user.getMustChangePassword() != null && user.getMustChangePassword()) {
+        // Check if user must change password (handle null as false)
+        Boolean mustChange = user.getMustChangePassword();
+        if (mustChange != null && mustChange) {
             // Generate temporary token for password change only
             String tempJwt = jwtUtil.generateToken(userDetails);
             return ResponseEntity.status(403).body(new MustChangePasswordResponse(
